@@ -1,0 +1,213 @@
+GOLD RATE AGENT — LEARNING NOTES
+=================================
+//08-29-2026
+
+1. JavaScript
+- JavaScript is the programming language we are using to write the application logic.
+- It provides things like variables, functions, strings, numbers, objects, async/await, etc.
+
+2. Node.js
+- Node.js lets us run JavaScript outside a web browser, such as from the Windows terminal.
+- We use `node filename.js` to execute a JavaScript file.
+
+3. npm
+- npm is the package manager that comes with Node.js.
+- `npm init -y` creates `package.json`, which describes our Node.js project.
+- `npm install selenium-webdriver` installs Selenium and records the dependency in `package.json`.
+- `package-lock.json` records the exact dependency versions/tree used for the project.
+- `node_modules/` contains installed packages and should not be committed to Git.
+
+4. package.json
+- Project configuration file.
+- Contains project information, scripts, and dependencies.
+- We do NOT run `npm init` every time we change code. It is mainly for creating/initializing the project.
+
+5. Selenium WebDriver
+- Selenium lets our JavaScript program control a real browser.
+- In our project, Selenium launches Chromium/Chrome, opens the gold-rate website, finds the gold-rate element, and reads its value.
+
+6. Builder / driver
+- `new Builder().forBrowser("chrome").build()` creates the browser WebDriver.
+- `driver` is our object for controlling the browser.
+- Think of `driver` like the person driving the browser according to our instructions.
+
+7. driver.get()
+- `await driver.get("URL")` tells the browser to navigate to a website.
+
+8. DOM
+- DOM = Document Object Model.
+- It is the browser's in-memory tree/object representation of the webpage.
+- HTML elements become objects/nodes in this tree.
+- A DOM element is one particular element in that tree, such as a `<span>`, `<div>`, or `<button>`.
+- Selenium interacts with the live DOM.
+
+9. HTML element
+- Example:
+  `<span id="goldrate_22ct" class="gold_rate">14800.00</span>`
+- The element is the `<span>`.
+- It can have attributes such as `id` and `class`, and it can contain text such as `14800.00`.
+
+10. By.id()
+- `By.id("goldrate_22ct")` is a Selenium locator.
+- A locator tells Selenium how to identify the element we want.
+- It is NOT the element itself.
+
+11. WebElement
+- `driver.findElement(...)` returns a Selenium WebElement representing the actual element Selenium found.
+- Example: `goldElement` represents the `<span>` containing the gold rate.
+
+12. driver.findElement()
+- `await driver.findElement(By.id("goldrate_22ct"))` finds an element using the given locator.
+
+13. getAttribute()
+- `await goldElement.getAttribute("textContent")` reads the requested property/attribute from the element.
+- For our gold-rate element, it gives us `"14800.00"`.
+
+14. Explicit wait
+- `driver.wait()` lets Selenium wait for a condition instead of blindly sleeping for a fixed amount of time.
+- `until.elementLocated(By.id("goldrate_22ct"))` defines the condition: wait until the element can be located.
+- `10000` means the maximum wait is 10,000 milliseconds = 10 seconds.
+- `const goldElement = await driver.wait(...)` waits and gives us the found element when the condition succeeds.
+
+15. sleep()
+- `driver.sleep(5000)` is a fixed 5-second delay.
+- We used it initially to observe the browser, but explicit waits are better when we are waiting for a specific page condition.
+
+16. async
+- `async` marks a JavaScript function as asynchronous.
+- It allows us to use `await` inside the function.
+- Example: `async function getGoldRate(driver) { ... }`
+
+17. await
+- `await` waits for an asynchronous operation to finish and gives us its result before the function continues.
+- Examples:
+  `await driver.get(...)`
+  `await driver.wait(...)`
+  `await goldElement.getAttribute(...)`
+
+18. Functions
+- A function is a reusable block of code that performs a job.
+- `getGoldRate(driver)` performs the job of getting the gold rate.
+- `createGoldMessage(goldRate)` performs the job of creating the message.
+- `return` sends a value back to the code that called the function.
+
+19. Number()
+- The website gives us `"14800.00"` as text/string.
+- `Number("14800.00")` converts that string into the number `14800`.
+- Numbers can then be used reliably for mathematical operations.
+
+20. typeof
+- `typeof value` tells us the JavaScript data type.
+- Example:
+  `typeof "14800.00"` → `"string"`
+  `typeof 14800` → `"number"`
+
+21. Template literals
+- Backticks allow us to insert JavaScript values into text.
+- Example:
+  `` `Todays gold price is Rs. ${goldRate}` ``
+- `${goldRate}` is replaced with the value of `goldRate`.
+
+22. toLocaleString()
+- `goldRate.toLocaleString("en-IN")` formats a number using Indian number formatting.
+- Example: `14800` → `14,800`; larger values can use Indian grouping such as `1,25,000`.
+
+23. CommonJS modules
+- We split our application across multiple `.js` files.
+- `module.exports = { getGoldRate };` makes `getGoldRate` available to another file.
+- `const { getGoldRate } = require("./gold-scraper");` imports the exported function.
+- `./` means the local/current folder.
+- `require("selenium-webdriver")` refers to an installed package rather than our own local file.
+
+24. Current project structure
+- `selenium-test.js` coordinates the application and controls the browser.
+- `gold-scraper.js` contains the logic for finding and reading the gold rate.
+- `message-generator.js` converts the number into the WhatsApp-ready message text.
+- `package.json` and `package-lock.json` describe dependencies.
+- `.gitignore` tells Git what not to track.
+- `node_modules/` contains installed dependencies.
+
+25. try / catch
+- `try` contains code we want to attempt.
+- `catch (error)` handles an error if something inside `try` fails.
+- `error.message` gives a readable description of the error.
+- This prevents failures from being completely unhandled.
+
+26. finally
+- `finally` runs whether the operation succeeds or fails.
+- We use it for cleanup:
+  `await driver.quit();`
+- This helps ensure the browser is closed even after an error.
+
+27. driver.quit()
+- Closes the browser session and ends the WebDriver session.
+
+28. Git
+- Git is a version-control system.
+- It keeps a history of project changes and lets us create snapshots called commits.
+- Git is different from GitHub: Git runs locally; GitHub hosts Git repositories online.
+
+29. git init
+- `git init` turns the current project folder into a Git repository.
+- It creates the hidden `.git/` directory where Git stores repository/history information.
+
+30. git status
+- `git status` shows the current state of the Git repository.
+- It tells us which files are untracked, staged, or changed.
+
+31. .gitignore
+- `.gitignore` lists files/folders Git should ignore.
+- We created it in `C:\Gold`.
+- It contains:
+  `node_modules/`
+- This prevents the large dependency folder from being tracked.
+
+32. git add
+- `git add .` stages the changes in the current directory for the next commit.
+- The staging area is the place where we choose what will go into the next snapshot.
+
+33. git commit
+- `git commit -m "Initial gold rate scraper"` creates a permanent local snapshot of the staged files.
+- The commit gets a unique ID.
+- Our first commit ID began with `07255ee`.
+
+34. Git branches
+- A branch is a line of development/history in a Git repository.
+- We renamed our local branch from `master` to `main`.
+- `git branch -M main` renamed the current branch to `main`.
+
+35. Git remote
+- A remote is another Git repository that our local repository knows about.
+- We added GitHub as a remote named `origin`.
+- `git remote -v` shows the remote URLs.
+
+36. origin
+- `origin` is simply the nickname we gave our GitHub repository.
+- It points to our online `gold-rate-agent` repository.
+
+37. git push
+- `git push -u origin main` sends our local `main` branch/commits to GitHub.
+- `-u` sets the upstream relationship so future pushes can usually use just `git push`.
+- After the first push, local `main` tracks `origin/main`.
+
+38. GitHub authentication
+- GitHub does not accept normal account passwords for Git operations over HTTPS.
+- Git Credential Manager (GCM) handled our authentication.
+- We confirmed GCM was installed with:
+  `git credential-manager --version`
+
+39. Git workflow we learned
+- Make/change code
+- `git status`
+- `git add .`
+- `git commit -m "Describe the change"`
+- `git push`
+
+40. Current project status
+- Selenium successfully opens the website and reads the Chennai 22K gold rate.
+- The current example rate was `14800`.
+- The message generator successfully creates:
+  `Todays gold price is Rs. 14,800`
+- The project is committed and pushed to GitHub.
+
+//08-29-2026
