@@ -210,4 +210,291 @@ GOLD RATE AGENT — LEARNING NOTES
   `Todays gold price is Rs. 14,800`
 - The project is committed and pushed to GitHub.
 
-//08-29-2026
+GOLD RATE AGENT — LEARNING NOTES
+=================================
+// 08-30-2026
+
+41. REST API
+- API = Application Programming Interface.
+- A REST API allows one application to communicate with another application over HTTP.
+- Our project uses the Telegram Bot API to send messages from our Node.js application to Telegram.
+- Think of an API as a defined way for our program to ask another system to perform an operation.
+
+42. HTTP Methods
+- GET → usually used to retrieve data.
+- POST → usually used to send/create data.
+- PUT → usually used to update/replace data.
+- DELETE → usually used to delete data.
+- Our Telegram message request uses POST because we are sending data to Telegram.
+
+43. API Endpoint
+- An endpoint is a specific URL provided by an API for a particular operation.
+- Our Telegram API endpoint is used to send a message.
+- The endpoint receives our request and returns a response.
+
+44. API Request
+- An API request contains information needed by the server to perform an operation.
+- Common parts include:
+  - HTTP method
+  - URL/endpoint
+  - headers
+  - request body
+  - authentication/token when required
+
+45. HTTP Headers
+- Headers provide additional information about an HTTP request.
+- We used:
+  `Content-Type: application/json`
+- This tells Telegram that the request body is JSON data.
+
+46. JSON
+- JSON = JavaScript Object Notation.
+- It is a common format for exchanging data between applications.
+- Example:
+  `{ "chat_id": -5397579709, "text": "Hello" }`
+- JavaScript objects can be converted into JSON when sending API requests.
+
+47. Request Body
+- The request body contains the actual data we send to the API.
+- Our Telegram request body contains:
+  - `chat_id` → identifies where the message should be sent.
+  - `text` → contains the message we want Telegram to send.
+
+48. Telegram Bot API
+- Telegram provides an HTTP-based Bot API that allows our program to communicate with a Telegram bot.
+- Our bot is `ChennaiGoldRateBot`.
+- We successfully used the API to send messages to our Telegram group.
+
+49. Telegram Chat ID
+- The `chat_id` identifies the Telegram conversation/group where the bot should send the message.
+- Our group has a negative chat ID because it is a Telegram group.
+- We obtained the chat ID from Telegram's update response.
+
+50. API Response
+- After sending an API request, the server returns a response.
+- Telegram returns JSON containing information such as:
+  - `ok`
+  - `result`
+  - message details
+- Example:
+  `"ok": true`
+  means Telegram successfully processed the request.
+
+51. fetch()
+- `fetch()` is used by Node.js to make HTTP requests.
+- Example:
+  `fetch(url, { method: "POST", ... })`
+- It allows our JavaScript application to communicate with the Telegram API.
+
+52. await fetch()
+- `await fetch(...)` waits for the HTTP request to complete.
+- The returned response is stored in a variable such as:
+  `const response = await fetch(...)`
+
+53. response.json()
+- `await response.json()` reads the response body and converts JSON into a JavaScript object.
+- Example:
+  `const result = await response.json();`
+
+54. API-level error checking
+- A successful HTTP request does not always mean the requested operation succeeded.
+- We check Telegram's API response:
+  `if (!result.ok) { ... }`
+- If Telegram reports failure, we create an error with:
+  `throw new Error(...)`
+
+55. throw
+- `throw` manually raises an error.
+- Example:
+  `throw new Error("Something went wrong");`
+- The error can then be handled by a surrounding `catch`.
+
+56. Error Propagation
+- An error can move from a lower-level function to the function that called it.
+- Our `telegram-sender.js` catches an error, logs it, and uses `throw error` to pass it back to `gold-agent.js`.
+- `gold-agent.js` can then handle the failure.
+
+57. try / catch / finally in the Agent
+- `try` contains the main work:
+  - open website
+  - get gold rate
+  - generate message
+  - send Telegram message
+- `catch` handles failures and logs the error.
+- `finally` performs cleanup regardless of success/failure.
+- Our cleanup is:
+  `await driver.quit();`
+
+58. Error Message vs Stack Trace
+- `error.message` gives the main readable error message.
+- `console.error(error)` prints the complete error, including the stack trace.
+- We use the shorter `error.message` for our application log and the full error in the console for development/debugging.
+
+59. Selenium Timeout Error
+- Selenium does not necessarily report an HTTP 404 directly when a webpage URL is invalid.
+- The browser can load a page that does not contain the expected element.
+- Our scraper then waits for:
+  `By.id("goldrate_22ct")`
+- If the element isn't found within 10 seconds, Selenium throws a `TimeoutError`.
+- This is a DOM/element-level failure rather than directly reporting an HTTP 404.
+
+60. logger.js
+- We created a separate `logger.js` module for application logging.
+- It contains a reusable `log()` function.
+- `module.exports = { log };` makes the function available to other files.
+
+61. Node.js File System (`fs`)
+- `fs` is Node.js's built-in File System module.
+- We use:
+  `const fs = require("fs");`
+- It allows Node.js to work with files.
+
+62. appendFileSync()
+- `fs.appendFileSync()` adds text to the end of a file.
+- It does not overwrite existing log entries.
+- Example:
+  `fs.appendFileSync("gold-agent.log", logMessage);`
+- `Sync` means the operation completes before the program continues.
+
+63. Application Logging
+- Logging records what the application is doing.
+- Our logger writes messages to:
+  `gold-agent.log`
+- It also prints the same log message to the console.
+- This gives us:
+  - persistent history in the log file
+  - immediate visibility in the terminal
+
+64. Log Timestamp
+- We use:
+  `new Date().toLocaleString("en-IN")`
+- This adds the date and time to every application log entry.
+- This is useful for troubleshooting scheduled/background executions.
+
+65. Current Application Log
+- Our successful execution produces entries similar to:
+  `Gold agent started`
+  `Gold rate retrieved: 14505`
+  `Message generated: Todays gold price is Rs. 14,505`
+  `Telegram message sent successfully`
+  `Gold agent finished`
+
+66. Runtime Files vs Source Code
+- `gold-agent.log` is a runtime-generated file.
+- Runtime files that continuously change generally should not be committed to Git.
+- We added:
+  `gold-agent.log`
+  to `.gitignore`.
+
+67. .env and Secrets
+- `.env` contains sensitive configuration such as the Telegram bot token.
+- `.env` must not be committed to GitHub.
+- We added `.env` to `.gitignore`.
+- Environment variables allow the application to use secrets without hard-coding them into source code.
+
+68. Windows Task Scheduler
+- Task Scheduler is Windows' built-in mechanism for running programs automatically according to a schedule.
+- It is conceptually similar to an Autosys job scheduler.
+- The scheduler decides WHEN to run the application.
+- Our Node.js application decides WHAT work to perform.
+
+69. Task Scheduler Action
+- We configured Task Scheduler to run:
+  `C:\Program Files\nodejs\node.exe`
+- Arguments:
+  `"C:\Gold\gold-agent.js"`
+- Start in:
+  `C:\Gold`
+- This is effectively equivalent to running:
+  `node C:\Gold\gold-agent.js`
+
+70. Task Scheduler Trigger
+- A trigger defines WHEN a scheduled task should run.
+- We created two triggers for the Gold Rate Agent.
+
+71. AM Schedule
+- Monday through Saturday.
+- Starts at 09:15 AM.
+- Repeats every 5 minutes.
+- Runs for 1 hour.
+- Therefore the intended run times are:
+  09:15, 09:20, 09:25, ... 10:15.
+- Sunday is excluded.
+
+72. PM Schedule
+- Monday through Saturday.
+- Starts at 03:00 PM.
+- Repeats every 15 minutes.
+- Runs for 4 hours.
+- Therefore the intended run times are:
+  15:00, 15:15, 15:30, ... 19:00.
+- Sunday is excluded.
+
+73. Task Scheduler "Run on Demand"
+- `Allow task to be run on demand` allows us to manually execute the scheduled task.
+- We used this to test the complete Gold Rate Agent without waiting for the scheduled time.
+
+74. Task Scheduler Security
+- We selected:
+  `Run only when user is logged on`
+- This is suitable for our current local Windows development/testing setup.
+- It keeps the task associated with the logged-in Windows desktop session.
+
+75. Task Scheduler Conditions
+- We left unnecessary restrictions disabled so Windows does not prevent the task from running because of unrelated idle/power conditions.
+
+76. Task Scheduler Overlapping Runs
+- We kept:
+  `If the task is already running → Do not start a new instance`
+- This prevents multiple copies of the Gold Rate Agent from running simultaneously.
+- This is important because our AM schedule starts a new run every 5 minutes.
+
+77. Local Scheduling vs Azure Scheduling
+- Windows Task Scheduler belongs to the local Windows machine.
+- It is useful for development/testing on our PC.
+- When we move the application to Azure, we will normally use an Azure scheduling mechanism instead.
+- The basic concept remains the same:
+  Scheduler → starts application → application performs work.
+
+78. Autosys Comparison
+- Autosys scheduler ≈ Azure/Windows scheduling mechanism.
+- Autosys job execution ≈ starting our Node.js application.
+- Job definition ≈ program + arguments + configuration + schedule.
+- The core concept is:
+  `Scheduler decides WHEN`
+  `Application decides WHAT`
+
+79. Current Complete Architecture
+- `gold-agent.js` is the main/orchestrator file.
+- `gold-scraper.js` gets the live gold rate using Selenium.
+- `message-generator.js` formats the gold rate into a message.
+- `telegram-sender.js` sends the message through the Telegram Bot API.
+- `logger.js` records application activity.
+- `.env` stores secrets/configuration.
+- Windows Task Scheduler starts `gold-agent.js` automatically.
+
+80. Current End-to-End Flow
+- Windows Task Scheduler triggers the application.
+- Node.js starts `gold-agent.js`.
+- Selenium opens Chromium.
+- The gold website is opened.
+- `getGoldRate(driver)` finds the gold-rate DOM element.
+- The value is converted from string to number.
+- `createGoldMessage(goldRate)` creates the final text.
+- `sendTelegramMessage(message)` sends it through the Telegram API.
+- Success/failure is recorded in `gold-agent.log`.
+- `finally` calls `driver.quit()` to close Chromium.
+- The Node.js process finishes.
+
+81. Current Project Status
+- Complete local Gold Rate Agent is working.
+- Telegram delivery is working.
+- Error handling is working.
+- Logging is working.
+- Windows Task Scheduler is working.
+- The scheduled task has been manually tested successfully.
+- GitHub contains the latest committed version.
+- `.env` and `gold-agent.log` are excluded from Git.
+- Next major phase: review/production hardening and then Azure deployment/scheduling.
+
+// 08-30-2026
