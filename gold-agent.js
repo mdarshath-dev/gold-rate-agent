@@ -32,7 +32,9 @@ async function main() {
         log("Telegram message sent successfully");
 
     } catch (error) {
-        console.error("Gold agent failed:", error);
+        
+    log(`Gold agent failed: ${error.message}`);
+    console.error(error);
 
     } finally {
         log("Gold agent finished");
