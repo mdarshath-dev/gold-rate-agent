@@ -9,19 +9,26 @@ async function main() {
         .forBrowser("chrome")
         .build();
 
-    await driver.get("https://thejewellersassociation.org/");
+    try {
+        await driver.get("https://thejewellersassociation.org/");
 
-    const goldRate = await getGoldRate(driver);
+        const goldRate = await getGoldRate(driver);
 
-    console.log("Gold rate:", goldRate);
+        console.log("Gold rate:", goldRate);
 
-    const message = createGoldMessage(goldRate);
+        const message = createGoldMessage(goldRate);
 
-    console.log("Message:", message);
+        console.log("Message:", message);
 
-    const result = await sendTelegramMessage(message);
+        await sendTelegramMessage(message);
 
-    await driver.quit();
+    } catch (error) {
+        console.error("Gold agent failed:", error);
+
+    } finally {
+        await driver.quit();
+    }
 }
 
 main();
+
