@@ -1,4 +1,5 @@
 const { Builder } = require("selenium-webdriver");
+const chrome = require("selenium-webdriver/chrome");
 const { getGoldRate } = require("./gold-scraper");
 const { sendTelegramMessage } = require("./telegram-sender");
 const { createGoldMessage } = require("./message-generator");
@@ -7,9 +8,18 @@ const { getLastGoldRate, saveGoldRate } = require("./gold-state");
 
 
 async function main() {
-    const driver = await new Builder()
-        .forBrowser("chrome")
-        .build();
+const options = new chrome.Options();
+
+options.addArguments(
+    "--headless",
+    "--no-sandbox",
+    "--disable-dev-shm-usage"
+);
+
+const driver = await new Builder()
+    .forBrowser("chrome")
+    .setChromeOptions(options)
+    .build();
 
         log("Gold agent started");
 

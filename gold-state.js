@@ -1,26 +1,27 @@
 const fs = require("fs");
 
+const stateFile =
+    process.env.STATE_FILE || "last-gold-rate.json";
+    
 function getLastGoldRate() {
-    if (!fs.existsSync("last-gold-rate.json")) {
+    if (!fs.existsSync(stateFile)) {
         return null;
     }
 
-    const data = fs.readFileSync("last-gold-rate.json", "utf8");
+    const data = fs.readFileSync(stateFile, "utf8");
 
-    const state = JSON.parse(data);
-
-    return state.goldRate;
+    return JSON.parse(data).goldRate;
 }
 
 function saveGoldRate(goldRate) {
-    const state = {
+    const data = {
         goldRate: goldRate
     };
 
-    fs.writeFileSync(
-        "last-gold-rate.json",
-        JSON.stringify(state, null, 2)
-    );
+fs.writeFileSync(stateFile, JSON.stringify(data, null, 2));
 }
 
-module.exports = { getLastGoldRate, saveGoldRate };
+module.exports = {
+    getLastGoldRate,
+    saveGoldRate
+};

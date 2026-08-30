@@ -1,0 +1,7 @@
+node_modules/
+.env
+gold-agent.log
+last-gold-rate.json
+.git/
+.gitignore
+Notes/
