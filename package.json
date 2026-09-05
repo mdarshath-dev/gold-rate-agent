@@ -2,7 +2,7 @@
   "name": "gold",
   "version": "1.0.0",
   "description": "",
-  "main": "hello.js",
+  "main": "gold-agent.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
