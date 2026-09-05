@@ -1,10 +1,20 @@
 pipeline {
     agent any
 
+    tools {
+        nodejs 'Node24'
+    }
+
     stages {
-        stage('Hello') {
+        stage('Install Dependencies') {
             steps {
-                echo 'Hello from Gold Rate Agent Jenkins!'
+                sh 'npm ci'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'npm test'
             }
         }
     }
