@@ -4,7 +4,7 @@
   "description": "",
   "main": "gold-agent.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+"test": "node message-generator.test.js"
   },
   "keywords": [],
   "author": "",
