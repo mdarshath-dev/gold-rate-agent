@@ -24,7 +24,7 @@ GOLD RATE AGENT — LEARNING NOTES
     dependency in package.json.
 -   package-lock.json records the exact dependency versions/tree used
     for the project.
--   node_modules/ contains installed packages and should not be
+-   node\_modules/ contains installed packages and should not be
     committed to Git.
 
 4.  package.json
@@ -64,14 +64,14 @@ GOLD RATE AGENT — LEARNING NOTES
 
 9.  HTML element
 
--   Example: <span id="goldrate_22ct" class="gold_rate">14800.00</span>
+-   Example: <span id="goldrate\_22ct" class="gold\_rate">14800.00</span>
 -   The element is the <span>.
 -   It can have attributes such as id and class, and it can contain text
     such as 14800.00.
 
 10. By.id()
 
--   By.id("goldrate_22ct") is a Selenium locator.
+-   By.id("goldrate\_22ct") is a Selenium locator.
 -   A locator tells Selenium how to identify the element we want.
 -   It is NOT the element itself.
 
@@ -83,7 +83,7 @@ GOLD RATE AGENT — LEARNING NOTES
 
 12. driver.findElement()
 
--   await driver.findElement(By.id("goldrate_22ct")) finds an element
+-   await driver.findElement(By.id("goldrate\_22ct")) finds an element
     using the given locator.
 
 13. getAttribute()
@@ -96,7 +96,7 @@ GOLD RATE AGENT — LEARNING NOTES
 
 -   driver.wait() lets Selenium wait for a condition instead of blindly
     sleeping for a fixed amount of time.
--   until.elementLocated(By.id("goldrate_22ct")) defines the condition:
+-   until.elementLocated(By.id("goldrate\_22ct")) defines the condition:
     wait until the element can be located.
 -   10000 means the maximum wait is 10,000 milliseconds = 10 seconds.
 -   const goldElement = await driver.wait(...) waits and gives us the
@@ -143,7 +143,7 @@ GOLD RATE AGENT — LEARNING NOTES
 21. Template literals
 
 -   Backticks allow us to insert JavaScript values into text.
--   Example: `Todays gold price is Rs. ${goldRate}`
+-   Example: \`Todays gold price is Rs. ${goldRate}\`
 -   ${goldRate} is replaced with the value of goldRate.
 
 22. toLocaleString()
@@ -174,7 +174,7 @@ GOLD RATE AGENT — LEARNING NOTES
     message text.
 -   package.json and package-lock.json describe dependencies.
 -   .gitignore tells Git what not to track.
--   node_modules/ contains installed dependencies.
+-   node\_modules/ contains installed dependencies.
 
 25. try / catch
 
@@ -216,7 +216,7 @@ GOLD RATE AGENT — LEARNING NOTES
 
 -   .gitignore lists files/folders Git should ignore.
 -   We created it in C:\Gold.
--   It contains: node_modules/
+-   It contains: node\_modules/
 -   This prevents the large dependency folder from being tracked.
 
 32. git add
@@ -335,7 +335,7 @@ GOLD RATE AGENT — LEARNING NOTES
 
 -   JSON = JavaScript Object Notation.
 -   It is a common format for exchanging data between applications.
--   Example: { "chat_id": -5397579709, "text": "Hello" }
+-   Example: { "chat\_id": -5397579709, "text": "Hello" }
 -   JavaScript objects can be converted into JSON when sending API
     requests.
 
@@ -343,7 +343,7 @@ GOLD RATE AGENT — LEARNING NOTES
 
 -   The request body contains the actual data we send to the API.
 -   Our Telegram request body contains:
-    -   chat_id → identifies where the message should be sent.
+    -   chat\_id → identifies where the message should be sent.
     -   text → contains the message we want Telegram to send.
 
 48. Telegram Bot API
@@ -355,7 +355,7 @@ GOLD RATE AGENT — LEARNING NOTES
 
 49. Telegram Chat ID
 
--   The chat_id identifies the Telegram conversation/group where the bot
+-   The chat\_id identifies the Telegram conversation/group where the bot
     should send the message.
 -   Our group has a negative chat ID because it is a Telegram group.
 -   We obtained the chat ID from Telegram’s update response.
@@ -436,7 +436,7 @@ GOLD RATE AGENT — LEARNING NOTES
     webpage URL is invalid.
 -   The browser can load a page that does not contain the expected
     element.
--   Our scraper then waits for: By.id("goldrate_22ct")
+-   Our scraper then waits for: By.id("goldrate\_22ct")
 -   If the element isn’t found within 10 seconds, Selenium throws a
     TimeoutError.
 -   This is a DOM/element-level failure rather than directly reporting
@@ -589,319 +589,282 @@ GOLD RATE AGENT — LEARNING NOTES
 79. Current Complete Architecture
 
 -   gold-agent.js is the main/orchestrator file.
--   gold-scraper.js gets the live gold rate using Selenium.
--   message-generator.js formats the gold rate into a message.
+-   gold-scraper.js gets the live Chennai 22K gold rate.
+-   message-generator.js creates the Telegram-ready message.
 -   telegram-sender.js sends the message through the Telegram Bot API.
--   logger.js records application activity.
--   .env stores secrets/configuration.
--   Windows Task Scheduler starts gold-agent.js automatically.
+-   logger.js records application activity in gold-agent.log.
+-   .env stores configuration/secrets locally and is ignored by Git.
+-   Windows Task Scheduler starts the agent at the configured AM and PM times.
 
-80. Current End-to-End Flow
+80. Docker
 
--   Windows Task Scheduler triggers the application.
--   Node.js starts gold-agent.js.
--   Selenium opens Chromium.
--   The gold website is opened.
--   getGoldRate(driver) finds the gold-rate DOM element.
--   The value is converted from string to number.
--   createGoldMessage(goldRate) creates the final text.
--   sendTelegramMessage(message) sends it through the Telegram API.
--   Success/failure is recorded in gold-agent.log.
--   finally calls driver.quit() to close Chromium.
--   The Node.js process finishes.
+-   Docker is a platform for packaging and running an application in an isolated container.
+-   A container includes the application and the environment it needs to run.
+-   This helps the Gold Rate Agent run consistently instead of depending on a manually configured local machine.
 
-81. Current Project Status
+81. Docker Image
 
--   Complete local Gold Rate Agent is working.
--   Telegram delivery is working.
--   Error handling is working.
--   Logging is working.
--   Windows Task Scheduler is working.
--   The scheduled task has been manually tested successfully.
--   GitHub contains the latest committed version.
--   .env and gold-agent.log are excluded from Git.
--   Next major phase: review/production hardening and then Azure
-    deployment/scheduling.
+-   A Docker image is the reusable blueprint used to create containers.
+-   It contains the application files, dependencies, and base operating-system environment.
+-   Our Gold Rate Agent image is built from the instructions in the Dockerfile.
 
-// 08-30-2026 // 08-30-2026 — DOCKER
+82. Docker Container
 
-82. Docker
+-   A Docker container is a running instance created from an image.
+-   The image is the template; the container is the actual running application.
+-   We can create, start, stop, inspect, and remove containers without changing the source code.
 
--   Docker is a platform for packaging and running applications in
-    isolated containers.
--   It lets us package the application together with the environment it
-    needs.
--   Our goal is to make the Gold Rate Agent portable so the same
-    application can eventually run in Azure.
+83. Dockerfile
 
-83. Docker CLI and Docker Engine
+-   A Dockerfile is a text file containing instructions for building a Docker image.
+-   It defines the base image, installed packages, working folder, copied files, and command to run.
+-   Docker reads the Dockerfile from top to bottom during docker build.
 
--   docker --version confirms the Docker CLI is installed.
--   docker info confirms the Docker Engine is running and provides
-    information about the Docker environment.
--   Our Docker setup uses Docker Desktop on Windows with a Linux engine
-    through WSL2.
--   Important environment details we observed:
-    -   Docker version: 29.7.2
-    -   Context: desktop-linux
-    -   Operating system: Docker Desktop
-    -   OS type: Linux
-    -   Architecture: x86_64
+84. Base Image
 
-84. Docker Image
+-   FROM selects the starting image for our Docker image.
+-   Our application uses a Node.js base image because the Gold Rate Agent runs with Node.js.
+-   The base image provides Node.js and the Linux environment needed by the application.
 
--   A Docker image is a packaged blueprint used to create containers.
--   Think: Image = blueprint/template
--   Our image is named: gold-rate-agent:latest
--   We built it with: docker build -t gold-rate-agent .
+85. WORKDIR
 
-85. Docker Container
+-   WORKDIR sets the working folder inside the container.
+-   We use /app as the application folder.
+-   Later Dockerfile commands such as COPY, RUN, and CMD work from this folder when appropriate.
 
--   A container is a running instance of a Docker image.
--   Think: Image → docker run → Container
--   A container is intended to be disposable/ephemeral.
--   Our Gold Rate Agent container starts, performs its work, and exits.
+86. COPY
 
-86. Dockerfile
+-   COPY transfers files from our project into the Docker image.
+-   We copy package.json and package-lock.json before installing dependencies.
+-   We also copy the Gold Rate Agent source files into /app.
 
--   A Dockerfile contains instructions for building a Docker image.
--   Our Dockerfile uses: FROM node:24-bookworm
--   FROM selects the base image/environment.
--   WORKDIR /app sets the working directory inside the container.
--   COPY package*.json ./ copies package.json and package-lock.json.
--   RUN npm ci installs the Node.js dependencies from the lockfile.
--   COPY ... copies the application source files into the image.
--   CMD ["node", "gold-agent.js"] defines the command that runs when the
-    container starts.
+87. npm ci inside Docker
 
-87. Docker Build Context
+-   npm ci installs the exact dependency versions recorded in package-lock.json.
+-   It is used in the Docker build so the image receives a clean, repeatable set of dependencies.
+-   It is more suitable than npm install for reproducible CI and Docker builds.
 
--   The . in: docker build -t gold-rate-agent . means the current
-    directory is used as the Docker build context.
--   Docker uses the build context when processing COPY instructions.
+88. Chromium in Docker
 
-88. .dockerignore
+-   Selenium needs a browser to open the gold-rate website.
+-   Our Dockerfile installs Chromium inside the image.
+-   This lets Selenium run in the container instead of depending on a browser installed on Windows.
 
--   .dockerignore controls which files are excluded from the Docker
-    build context.
--   It is similar in concept to .gitignore, but it controls what Docker
-    can copy during a build.
--   Our .dockerignore excludes:
-    -   node_modules/
-    -   .env
-    -   gold-agent.log
-    -   last-gold-rate.json
-    -   .git/
-    -   .gitignore
-    -   Notes/
--   This prevents secrets, runtime files, Git internals, and unnecessary
-    development files from being copied into the image.
+89. Docker Build Context
 
-89. Docker Dependencies
+-   The build context is the set of project files Docker can access during docker build.
+-   Docker sends this context to the Docker engine.
+-   Keeping unnecessary files out of the context makes builds faster and cleaner.
 
--   We do not copy our local node_modules/ into the image.
--   The image installs dependencies itself using: npm ci
--   package.json and package-lock.json are the Node.js dependency
-    definition for the container.
+90. .dockerignore
 
-90. Docker + Chromium
+-   .dockerignore tells Docker which files and folders should not be sent in the build context.
+-   We exclude unnecessary items such as node_modules and local runtime files.
+-   This is similar in purpose to .gitignore, but it applies to Docker builds.
 
--   The initial image contained Node.js, npm dependencies, and our
-    application, but Chromium was not installed.
--   The first container run failed with:
-    Server terminated early with status 127
--   We learned that the Docker image needs a browser because Selenium
-    controls Chromium/Chrome.
--   We added Chromium to the image with:
-    apt-get update && apt-get install -y chromium
--   We remove temporary package metadata with:
-    rm -rf /var/lib/apt/lists/*
+91. docker build
 
-91. Headless Chromium
+-   docker build creates an image using the Dockerfile.
+-   Example: docker build -t gold-rate-agent:jenkins .
+-   -t assigns a repository name and tag to the image.
+-   The final . means to use the current folder as the Docker build context.
 
--   A container normally does not have a graphical desktop where a
-    browser window can be displayed.
--   We configured Selenium/Chrome options with: --headless
--   Headless mode allows Chromium to run without a visible browser
-    window.
--   This is appropriate for a cloud/container environment.
+92. Docker Tags
 
-92. Chrome Container Flags
+-   A tag is a label attached to a Docker image.
+-   gold-rate-agent is the image repository/name.
+-   jenkins is the tag used for the image built by the Jenkins pipeline.
+-   Tags help distinguish different image versions or purposes.
 
--   We added: --headless --no-sandbox --disable-dev-shm-usage
--   --headless runs Chromium without a GUI.
--   --no-sandbox helps Chromium run in our container environment where
-    the browser sandbox can have compatibility issues, especially when
-    running as root.
--   --disable-dev-shm-usage avoids Chromium problems caused by limited
-    shared memory in some container environments.
--   These options were required to get Selenium + Chromium working
-    inside our container.
+93. docker images
 
-93. Selenium + Docker Flow
+-   docker images lists Docker images stored locally.
+-   It lets us confirm that an image was created and see its repository, tag, image ID, and size.
+-   Example: docker images gold-rate-agent.
 
--   Our working container flow is: Docker Container → Node.js → Selenium
-    → Headless Chromium → Gold website → Gold rate → Telegram API
--   We successfully ran this complete flow inside Docker.
+94. docker run
 
-94. Docker Environment Variables
+-   docker run creates and starts a container from an image.
+-   It is how we execute the packaged Gold Rate Agent in Docker.
+-   A container can be run interactively for testing or in the background when appropriate.
 
--   We ran the container using:
-    docker run --rm --env-file .env gold-rate-agent
--   --env-file .env supplies environment variables to the container at
-    runtime.
--   This does NOT copy .env into the image.
--   This is preferable to baking secrets such as the Telegram bot token
-    into the Docker image.
--   In Azure, the same concept will be handled using cloud
-    environment/secrets configuration rather than committing .env.
+95. Docker CMD
 
-95. Container Filesystem Is Ephemeral
+-   CMD defines the default command that runs when a container starts.
+-   For the Gold Rate Agent, the command starts Node.js and runs gold-agent.js.
+-   The command can be overridden when running a container if needed.
 
--   A normal container filesystem should not be treated as permanent
-    storage.
--   We proved this by running the container twice with --rm.
--   The first container saved: last-gold-rate.json
--   After the container exited and was removed, the second container
-    started with: Previous gold rate: null
--   This demonstrated:
-    Container deleted → container filesystem/data disappears
+96. Environment Variables in Docker
 
-96. Docker Volume
+-   Environment variables provide configuration values to an application at runtime.
+-   Sensitive values such as the Telegram bot token should not be copied into the Docker image.
+-   They should be supplied securely when the container runs or by the eventual deployment platform.
 
--   A Docker volume provides persistent storage outside the container’s
-    temporary filesystem.
--   We created: gold-rate-state
--   We mounted it into the container at: /app/data
--   Mount command: --mount source=gold-rate-state,target=/app/data
--   Data written to the mounted volume survives container deletion.
+97. Docker Layer Cache
 
-97. Docker Volume Persistence Test
+-   Docker builds an image in layers.
+-   If an earlier instruction and its inputs have not changed, Docker may reuse its previous layer.
+-   Copying package files before source files allows dependency installation to be cached when dependencies are unchanged.
 
--   First run with the volume: Previous gold rate: null → Telegram
-    message sent → saved 14505
--   Second run with the same volume: Previous gold rate: 14505 → gold
-    rate unchanged → Telegram message not sent
--   This proved that the Docker volume successfully persisted the state
-    between separate containers.
+98. Portable Deployment
 
-98. Configurable State File
+-   Docker packages the Gold Rate Agent with its Node.js dependencies and browser environment.
+-   The same image can be tested locally, built by Jenkins, and later deployed to a server or cloud platform.
+-   This reduces “works on my machine” differences.
 
--   We changed the state location to:
-    process.env.STATE_FILE || "last-gold-rate.json"
--   This allows the same application code to work in different
-    environments.
--   Windows can use the default: last-gold-rate.json
--   Docker can use: /app/data/last-gold-rate.json
--   The application code stays the same while the environment controls
-    the storage location.
+99. CI
 
-99. Docker State Mount
+-   CI = Continuous Integration.
+-   CI automatically checks code changes by building the application and running tests.
+-   Our Jenkins pipeline is the beginning of CI for the Gold Rate Agent.
 
--   Our Docker test uses: -e STATE_FILE=/app/data/last-gold-rate.json
--   Together with: --mount source=gold-rate-state,target=/app/data
--   This means: STATE_FILE → /app/data/last-gold-rate.json → Docker
-    volume gold-rate-state → persistent state
+100. CD
 
-100. Docker Image Tags
+-   CD commonly means Continuous Delivery or Continuous Deployment.
+-   Continuous Delivery prepares a tested build so it is ready to deploy.
+-   Continuous Deployment automatically releases a tested build to an environment.
+-   Our current work has completed CI build steps; automatic deployment is a future step.
 
--   gold-rate-agent:latest is the image name plus tag.
--   latest is the default tag when no tag is specified.
--   Later, for production/cloud deployment, we can use explicit version
-    tags instead of relying only on latest.
+101. Build Verification
 
-101. Docker Image Cleanup
+-   A build should prove more than that source files exist.
+-   Our verification includes installing exact dependencies, running automated tests, and building the Docker image.
+-   A successful build gives confidence that the committed code can be packaged.
 
--   Repeated builds can leave dangling images shown as: <none>
--   We cleaned these safely with: docker image prune
--   docker image prune removes dangling images.
--   We should avoid aggressive commands such as docker system prune -a
-    unless we deliberately want broader cleanup.
--   Docker image layers can be shared, so removing dangling image
-    references does not always reclaim disk space.
+102. Image Build Result
 
-102. Docker Image Size
+-   Docker successfully built the Gold Rate Agent image from the project Dockerfile.
+-   The image is named gold-rate-agent:jenkins when built by Jenkins.
+-   This image is the artifact produced by the current CI pipeline.
 
--   Our working image is relatively large, around 1.8 GB as displayed by
-    Docker Desktop.
--   Much of the size comes from the Node.js base image and
-    Chromium/browser dependencies.
--   We have not optimized the image yet.
--   Production image-size optimization is a future step before Azure
-    deployment.
+103. Docker Desktop Engine
 
-103. Docker vs Windows Application
+-   Docker Desktop provides the Docker Engine running on the local machine.
+-   Docker commands communicate with the Engine to build images and manage containers.
+-   Jenkins uses this local Docker Engine through the mounted Docker socket.
 
--   The same Gold Rate Agent code was tested in both environments:
-    -   Windows directly with node gold-agent.js
-    -   Docker container with docker run ...
--   Both environments successfully retrieved the gold rate.
--   Windows used the default state file.
--   Docker used the mounted volume and configurable STATE_FILE.
+104. Docker Socket
 
-104. Docker Timezone Difference
+-   The Docker socket is the communication endpoint used by the Docker CLI to talk to the Docker Engine.
+-   On the Jenkins container it is available at /var/run/docker.sock.
+-   Mounting the socket lets Docker CLI commands inside Jenkins control the local Docker Engine.
 
--   We observed that Windows displayed local IST time while the Linux
-    Docker container displayed UTC.
--   Example:
-    -   Windows: approximately 4:51 PM IST
-    -   Docker: approximately 11:20 AM UTC
--   The difference is 5 hours 30 minutes, which corresponds to IST being
-    UTC+5:30.
--   This demonstrated that different execution environments can have
-    different system timezones.
--   For cloud deployment, timezone handling and scheduling should be
-    made explicit rather than relying on the machine’s local timezone.
--   We have not yet changed the application’s timezone handling.
+105. Docker Socket Security
 
-105. Docker Runtime vs Source Code
+-   Access to the Docker socket is powerful because it can control Docker containers and images on the host.
+-   We use socket access only for this local learning setup.
+-   Production deployments should use a more carefully controlled design.
 
--   Source code and dependencies belong in the Docker image.
--   Secrets and runtime state should be supplied externally.
--   Conceptually: Docker Image = application + dependencies
-    Container runtime = configuration + secrets + persistent storage
+106. Persistent Docker Volume
 
-106. Docker + Git
+-   The jenkins_home Docker volume stores Jenkins configuration, plugins, jobs, credentials, and build history.
+-   Removing and recreating the Jenkins container does not remove this volume.
+-   Reusing jenkins_home preserved the gold-rate-agent pipeline while the Jenkins image was updated.
 
--   We added and committed:
-    -   Dockerfile
-    -   .dockerignore
-    -   Docker-related application changes
--   The Docker checkpoint was committed and pushed to GitHub.
--   The working tree was clean after the commit.
+107. Local Development Setup
 
-107. Current Docker Architecture
+-   Our Jenkins and Docker work currently runs locally through Docker Desktop.
+-   This is suitable for learning and verifying the CI pipeline.
+-   Future deployment can move the packaged image and automation to Docker Hub, Azure Container Registry, or an Azure environment.
 
--   Current architecture: Dockerfile → docker build →
-    gold-rate-agent:latest → docker run → temporary container →
-    Selenium + headless Chromium → gold website → Telegram API
--   Persistent state is supplied separately through: gold-rate-state
-    Docker volume.
+108. Current Docker Status
 
-108. Important Docker Concepts Learned
+-   The Gold Rate Agent has a Dockerfile and can be built into a Docker image.
+-   Docker Desktop is available locally.
+-   Jenkins can now access Docker through the custom Jenkins image, mounted socket, and configured permissions.
+-   The next completed section records how Jenkins performs the automated CI work.
 
--   Image = packaged blueprint.
--   Container = running instance of an image.
--   Dockerfile = instructions for building an image.
--   .dockerignore = controls files sent into the build context.
--   Volume = persistent storage for container data.
--   Environment variable = runtime configuration.
--   Container filesystem = temporary/ephemeral by default.
--   docker build = build an image.
--   docker run = create/start a container from an image.
--   docker image prune = clean dangling images.
+GOLD RATE AGENT — LEARNING NOTES
 
-109. Current Project Status After Docker
+// 09-06-2026
 
--   Gold Rate Agent works directly on Windows.
--   Gold Rate Agent works inside Docker.
--   Selenium works with headless Chromium inside Docker.
--   Telegram API delivery works inside Docker.
--   Application state persists through a Docker volume.
--   Secrets are supplied through environment variables rather than
-    copied into the image.
--   Dockerfile and .dockerignore are committed to GitHub.
--   Next major phase: Docker production hardening/image optimization,
-    then Azure deployment and scheduling.
+109. Jenkins
 
-// 08-30-2026
+-   Jenkins is an automation server used to build, test, and deliver software.
+-   It can retrieve our code from GitHub and run the same checks automatically.
+-   In our project, Jenkins performs the CI steps for the Gold Rate Agent.
+
+110. Jenkinsfile
+
+-   A Jenkinsfile is a text file stored in the project repository.
+-   It defines the Jenkins pipeline as code, so the build process is version-controlled with the application.
+-   Our Jenkinsfile contains the dependency-installation, test, and Docker-build stages.
+
+111. Jenkins Pipeline
+
+-   A Jenkins pipeline is the ordered workflow Jenkins follows to build and verify the project.
+-   Our pipeline runs stages in order:
+    -   Install Dependencies
+    -   Test
+    -   Docker Build
+-   A stage makes each major part of the build visible in Jenkins.
+
+112. Pipeline from SCM
+
+-   SCM = Source Control Management.
+-   Pipeline from SCM tells Jenkins to retrieve the Jenkinsfile and application source from GitHub.
+-   Jenkins checked out the main branch of the gold-rate-agent repository before running the pipeline.
+-   This means the pipeline uses the Jenkinsfile committed with the code, rather than a separately typed copy in Jenkins.
+
+113. NodeJS Plugin and Node24 Tool
+
+-   The Jenkins NodeJS plugin provides Node.js installations for Jenkins jobs.
+-   We configured a Node.js tool named Node24.
+-   The Jenkinsfile selects Node24 so npm commands run with the required Node.js version.
+-   This makes the Node.js environment explicit and repeatable for the pipeline.
+
+114. npm ci in Jenkins
+
+-   The Install Dependencies stage runs npm ci.
+-   npm ci installs the exact packages recorded in package-lock.json.
+-   Jenkins starts from a clean workspace, so this confirms the project dependencies can be installed correctly in CI.
+
+115. npm test in Jenkins
+
+-   The Test stage runs npm test.
+-   Our current test command runs message-generator.test.js.
+-   Jenkins reported “Message generator test passed!”, confirming the automated test succeeded during the build.
+
+116. Custom Jenkins Image with Docker CLI
+
+-   The standard Jenkins image did not include the Docker command-line tool.
+-   We created a custom image named jenkins-with-docker from the Jenkins LTS image.
+-   The custom Dockerfile installs the Docker CLI while Jenkins continues to run as the jenkins user.
+-   This gives Jenkins the docker command needed by the Docker Build stage.
+
+117. Docker Socket Mounting and Permissions
+
+-   The Jenkins container mounts /var/run/docker.sock from Docker Desktop.
+-   The Docker socket allows the Docker CLI inside Jenkins to communicate with the local Docker Engine.
+-   The socket was owned by root, so the jenkins user initially received a permission-denied error.
+-   We recreated Jenkins with --group-add 0, giving the Jenkins process the supplementary group required by this local Docker Desktop socket.
+-   docker exec jenkins docker info successfully returned the Docker Engine version, proving the connection and permission setup worked.
+
+118. Jenkins Builds the Gold Rate Agent Image
+
+-   The Docker Build stage runs:
+    docker build -t gold-rate-agent:jenkins .
+-   Jenkins uses the checked-out source code and the project Dockerfile to build the image.
+-   The completed build named the result:
+    gold-rate-agent:jenkins
+-   The Jenkins console ended with Finished: SUCCESS.
+
+119. Current Jenkins CI Architecture and Status
+
+-   Current architecture:
+
+    GitHub
+       ↓
+    Jenkins Pipeline
+       ├── npm ci
+       ├── npm test
+       └── docker build
+               ↓
+    gold-rate-agent:jenkins
+
+-   Jenkins successfully checks out the Gold Rate Agent from GitHub.
+-   Node24 is available to the pipeline.
+-   npm ci and npm test both succeed.
+-   Jenkins can communicate with Docker Desktop and build gold-rate-agent:jenkins.
+-   The current result is a working local CI pipeline. Running the built container and automating deployment are future CI/CD steps.
+
