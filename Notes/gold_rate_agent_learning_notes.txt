@@ -868,3 +868,227 @@ GOLD RATE AGENT — LEARNING NOTES
 -   Jenkins can communicate with Docker Desktop and build gold-rate-agent:jenkins.
 -   The current result is a working local CI pipeline. Running the built container and automating deployment are future CI/CD steps.
 
+GOLD RATE AGENT — LEARNING NOTES
+
+// 09-19-2026
+
+120. Azure Resource Group
+
+- A Resource Group is a logical container for related Azure resources.
+- We created `gold-rate-agent-rg` for the Gold Rate Agent.
+- The deployment resources are grouped there so they can be managed together.
+
+121. Azure Container Registry (ACR)
+
+- Azure Container Registry is a private registry for storing Docker container images.
+- We created the registry `goldrateagentmdarshath`.
+- Its login server is `goldrateagentmdarshath.azurecr.io`.
+- We pushed the Gold Rate Agent Docker image to the registry.
+- The image repository is `gold-rate-agent` and the tag used was `latest`.
+
+122. Docker Image Deployment Flow
+
+- The Docker image is built from our Dockerfile.
+- The image can be stored in Azure Container Registry.
+- Azure services can then pull that image and run it.
+- Basic flow:
+    Source Code
+        ↓
+    Docker Image
+        ↓
+    Azure Container Registry
+        ↓
+    Azure Container Apps Job
+
+123. Azure Container Apps Environment
+
+- A Container Apps Environment is the Azure environment in which our Container Apps workloads run.
+- We created `gold-rate-agent-env`.
+- Azure also created a Log Analytics workspace for the environment.
+- The environment provides the infrastructure needed to run our Container Apps Job.
+
+124. Container Apps Job
+
+- A Container Apps Job is designed for workloads that start, perform a task, and finish.
+- This fits our Gold Rate Agent because each execution:
+    - starts the container
+    - opens the website
+    - retrieves the gold rate
+    - checks the previous rate
+    - optionally sends Telegram
+    - saves the new state
+    - exits
+- The job only runs when an execution is triggered.
+
+125. Scheduled Container Apps Job
+
+- We configured the Gold Rate Agent as a scheduled Container Apps Job.
+- The MVP cron expression was:
+  `*/15 * * * 1-6`
+- This means every 15 minutes from Monday through Saturday.
+- The scheduler decides WHEN the job starts.
+- The Gold Rate Agent decides WHAT work happens during the execution.
+
+126. Managed Identity
+
+- A managed identity allows an Azure resource to authenticate to other Azure resources without putting Azure credentials in application code.
+- We enabled a system-assigned managed identity for the Container Apps Environment.
+- The identity was given permission to pull images from Azure Container Registry.
+
+127. AcrPull Role
+
+- `AcrPull` is an Azure role that allows a resource to pull container images from Azure Container Registry.
+- We assigned the Container Apps Environment managed identity the `AcrPull` role.
+- This allowed the Container Apps Job to pull the private Gold Rate Agent image from ACR.
+
+128. Azure Secrets
+
+- Secrets store sensitive values such as the Telegram bot token without putting the value directly into source code.
+- We created an Azure Container Apps secret named:
+  `telegram-bot-token`
+- The actual token value is intentionally not recorded in these notes.
+
+129. Secret to Environment Variable
+
+- Our Node.js code reads:
+  `process.env.TELEGRAM_BOT_TOKEN`
+- Azure therefore needs to expose the secret to the container through an environment variable.
+- The Container Apps Job was configured with:
+  `TELEGRAM_BOT_TOKEN`
+- That environment variable references the Azure secret `telegram-bot-token`.
+- Important distinction:
+    Secret = securely stored value
+    Environment variable = how the application receives the value
+
+130. Debugging the Telegram Failure
+
+- The first Azure executions successfully pulled the container image, started the application, launched Selenium/Chromium, retrieved the gold rate, and generated the message.
+- Telegram initially returned:
+  `Telegram API error: Not Found`
+- We checked the Azure Container Apps Job configuration and found that `TELEGRAM_BOT_TOKEN` was missing from the container environment-variable list even though the Azure secret existed.
+- We added `TELEGRAM_BOT_TOKEN` as an environment variable whose source was the existing `telegram-bot-token` secret.
+- No Docker image rebuild was required for this configuration change.
+
+131. Azure Files
+
+- The Gold Rate Agent needs to remember the previous gold rate between separate executions.
+- Container-local state should not be relied on for persistent data because containers are disposable.
+- We created the Azure Storage Account:
+  `goldrateagentstate`
+- We created the Azure File Share:
+  `gold-state`
+
+132. Azure File Volume
+
+- We connected the Azure File Share to the Container Apps Environment.
+- We created a volume for the Container Apps Job:
+  `goldstate-volume`
+- The volume is mounted inside the container at:
+  `/app/data`
+- The application therefore has a persistent location even though each job execution uses a disposable container.
+
+133. STATE_FILE Configuration
+
+- `gold-state.js` uses:
+  `const stateFile = process.env.STATE_FILE || "last-gold-rate.json";`
+- Locally, the default state file can remain in the project directory.
+- In Azure, we configured:
+  `STATE_FILE=/app/data/last-gold-rate.json`
+- Because `/app/data` is backed by the Azure File Share, the previous gold rate can survive across separate job executions.
+
+134. Azure Job Execution Logs
+
+- Azure Container Apps Job execution logs let us see the application's console output.
+- Our logs helped verify each stage of the cloud execution.
+- A successful execution showed:
+    Gold agent started
+    Gold rate retrieved
+    Previous gold rate
+    Message generated
+    Telegram message sent successfully
+    Saved new gold rate
+    Gold agent finished
+- Logs are useful for proving what actually happened inside a scheduled cloud execution.
+
+135. First Successful Azure Execution
+
+- The first successful execution retrieved:
+  `14285`
+- The previous state was:
+  `null`
+- The application generated the Telegram message.
+- Telegram reported:
+  `Telegram message sent successfully`
+- The application saved the new gold rate:
+  `14285`
+- This proved the complete first-run path worked in Azure.
+
+136. Persistent State and Change Detection
+
+- The next execution retrieved:
+  `14285`
+- It also read:
+  `Previous gold rate: 14285`
+- The application detected that the rate had not changed.
+- It logged:
+  `Gold rate has not changed. Telegram message not sent.`
+- This proved that:
+    - state persisted between executions
+    - Azure Files was being used successfully
+    - comparison logic worked
+    - Telegram was not called unnecessarily when the price was unchanged
+
+137. Final Cloud Architecture
+
+- The completed MVP architecture is:
+
+    Scheduled Azure Container Apps Job
+                  ↓
+        Pull Docker image from ACR
+                  ↓
+           Start container
+                  ↓
+           gold-agent.js
+                  ↓
+         gold-scraper.js
+                  ↓
+         Selenium + Chromium
+                  ↓
+         Chennai 22K gold rate
+                  ↓
+         Read previous state
+            from Azure Files
+                  ↓
+            Compare rates
+              ↙       ↘
+         unchanged     changed
+            ↓             ↓
+      no Telegram     send Telegram
+                          ↓
+                   save new rate
+                          ↓
+                     job finishes
+
+- Azure Secret supplies the Telegram bot token to the container through `TELEGRAM_BOT_TOKEN`.
+- Azure Container Registry stores the Docker image.
+- Azure Container Apps Job provides execution and scheduling.
+- Azure Files provides persistent state.
+
+138. Cloud MVP Result
+
+- The Gold Rate Agent is now running as a scheduled Azure workload.
+- The laptop does not need to be powered on for the Azure job to run.
+- The Docker image, Selenium browser environment, Telegram API integration, scheduling, persistent state, and change-detection logic all work together in the cloud.
+- The project has moved from a local automation to a working cloud-based scheduled automation.
+
+139. Important Deployment Lesson
+
+- Moving an application to the cloud is not only about uploading the Docker image.
+- The application also needs:
+    - a place to store the image
+    - a runtime to execute it
+    - a scheduler when execution is periodic
+    - secure configuration/secrets
+    - persistent storage when state must survive
+    - permissions allowing Azure services to communicate
+- The Gold Rate Agent gave us a practical example of each of these pieces.
