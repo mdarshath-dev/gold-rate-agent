@@ -1,13 +1,13 @@
-FROM node:24-bookworm
 
-RUN apt-get update && apt-get install -y chromium \
-    && rm -rf /var/lib/apt/lists/*
+FROM node:24-bookworm-slim
 
 WORKDIR /app
 
-COPY package*.json ./
+RUN apt-get update && apt-get install -y --no-install-recommends chromium \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN npm ci
+COPY package*.json ./
+RUN npm ci --omit=dev && npm cache clean --force
 
 COPY gold-agent.js .
 COPY gold-scraper.js .
