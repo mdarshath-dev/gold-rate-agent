@@ -1,7 +1,7 @@
 require("dotenv").config();
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
-const chatId = -5397579709;
+const chatId = -1004446915086;
 
 const url = `https://api.telegram.org/bot${token}/sendMessage`;
 
